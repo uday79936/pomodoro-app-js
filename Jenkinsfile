@@ -8,7 +8,7 @@ pipeline {
         NEXUS_GROUP = 'com/web/pomodoro'
         NEXUS_ARTIFACT = 'pomodoro-app'
         NGINX_SERVER = '18.116.203.32'
-        NGINX_WEB_ROOT = '/var/www/html/pomodoro'
+        NGINX_WEB_ROOT = '/var/www/html'
     }
 
     stages {
