@@ -95,7 +95,7 @@ pipeline {
                         echo "🔍 Fetching latest tarball from Nexus..."
                         DOWNLOAD_URL=$(curl -s -u ${NEXUS_USR}:${NEXUS_PSW} \
                             "${NEXUS_URL}/service/rest/v1/search?repository=${NEXUS_REPO}&group=com.web.pomodoro&name=${NEXUS_ARTIFACT}" \
-                            | grep -oP '"downloadUrl"\\s*:\\s*"\\K[^"]+\\.tar\\.gz' | grep -vE '\\.md5|\\.sha1' | tail -1)
+                            | grep -oP '"downloadUrl"\\s*:\\s*"\\K[^"]+' | grep -E '\\.tar\\.gz' | tail -1)
 
                         if [[ -z "$DOWNLOAD_URL" ]]; then
                             echo "❌ No tarball found in Nexus!"
