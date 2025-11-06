@@ -8,7 +8,7 @@ pipeline {
         NEXUS_GROUP = 'com/web/pomodoro'
         NEXUS_ARTIFACT = 'pomodoro-app'
         NGINX_SERVER = '18.116.203.32'
-        NGINX_WEB_ROOT='/var/www/html'
+        NGINX_WEB_ROOT = '/var/www/html/pomodoro'
     }
 
     stages {
@@ -32,7 +32,25 @@ pipeline {
             }
         }
 
-        /* === Stage 3: Run Tests === */
+        /* === Stage 3: SonarQube Analysis === */
+        stage('SonarQube Analysis') {
+            steps {
+                echo '🔍 Running SonarQube static analysis...'
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    sh '''
+                        sonar-scanner \
+                          -Dsonar.projectKey=pomodoro-app-js \
+                          -Dsonar.projectName="Pomodoro App JS" \
+                          -Dsonar.projectVersion=0.0.${BUILD_NUMBER} \
+                          -Dsonar.sources=src \
+                          -Dsonar.language=js \
+                          -Dsonar.sourceEncoding=UTF-8
+                    '''
+                }
+            }
+        }
+
+        /* === Stage 4: Run Tests === */
         stage('Run Tests') {
             steps {
                 echo '🧪 Running tests...'
@@ -40,7 +58,7 @@ pipeline {
             }
         }
 
-        /* === Stage 4: Build Artifact === */
+        /* === Stage 5: Build Artifact === */
         stage('Build Artifact') {
             steps {
                 echo '⚙️ Building application...'
@@ -50,7 +68,7 @@ pipeline {
             }
         }
 
-        /* === Stage 5: Package Artifact === */
+        /* === Stage 6: Package Artifact === */
         stage('Package Artifact') {
             steps {
                 echo '📦 Creating tarball...'
@@ -63,7 +81,7 @@ pipeline {
             }
         }
 
-        /* === Stage 6: Upload Artifact to Nexus === */
+        /* === Stage 7: Upload Artifact to Nexus === */
         stage('Upload Artifact to Nexus') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'nexus', usernameVariable: 'NEXUS_USR', passwordVariable: 'NEXUS_PSW')]) {
@@ -83,7 +101,7 @@ pipeline {
             }
         }
 
-        /* === Stage 7: Deploy to Nginx === */
+        /* === Stage 8: Deploy to Nginx === */
         stage('Deploy to Nginx') {
             agent { label 'tomcat' }
             steps {
@@ -105,7 +123,6 @@ pipeline {
                         fi
 
                         echo "🚀 Deploying to Nginx..."
-     
                         sudo mkdir -p ${NGINX_WEB_ROOT}
                         sudo rm -rf ${NGINX_WEB_ROOT}/*
                         sudo tar -xzf "$TARBALL" -C ${NGINX_WEB_ROOT}/
