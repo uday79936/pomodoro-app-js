@@ -1,10 +1,6 @@
 pipeline {
     agent { label 'sonar' }
 
-    tools {
-        nodejs 'NodeJS'
-    }
-
     environment {
         SONARQUBE_SERVER = 'sonar'
         NEXUS_URL = 'http://3.19.221.46:8081'
